@@ -91,18 +91,14 @@ public class base extends JFrame {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		BasicConfigurator.configure();
-		System.out.println("Show some logs:\n");
+		BasicConfigurator.configure();		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					log.trace("This is a TRACE example");
-					log.info("This is a INFO example");
-					base frame = new base();
-					log.debug("This is a DEBUG example");
-					System.out.println("\nEnd");
+				try {					
+					base frame = new base();									
 					frame.setVisible(true);
 				} catch (Exception e) {
+					log.error(e);
 					e.printStackTrace();
 				}
 			}
