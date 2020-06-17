@@ -83,7 +83,7 @@ public class base extends JFrame {
 	private String sqlFlights = "";
 	private String sqlDates = "";
 	
-	final static Logger log = Logger.getLogger(base.class.getName());				//log4j
+	private static Logger log = Logger.getLogger(base.class.getName());				//log4j
 	private JButton btnNewButton;
 	private JTextField destinationField;
 
@@ -92,16 +92,22 @@ public class base extends JFrame {
 	 */
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
+		System.out.println("Show some logs:\n");
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					log.trace("This is a TRACE example");
+					log.info("This is a INFO example");
 					base frame = new base();
+					log.debug("This is a DEBUG example");
+					System.out.println("\nEnd");
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+		
 	} 	
 
 	/**
