@@ -97,7 +97,9 @@ public class base extends JFrame {
 		
 		// create a new databases obj
 		sqliteDB db = new sqliteDB();
+		// testing
 		db.showFlightList();
+		
 		
 		log.debug("Create new Frame");
 		
