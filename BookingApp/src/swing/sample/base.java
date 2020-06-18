@@ -95,6 +95,10 @@ public class base extends JFrame {
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
 		
+		// create a new databases obj
+		sqliteDB db = new sqliteDB();
+		db.showFlightList();
+		
 		log.debug("Create new Frame");
 		
 		EventQueue.invokeLater(new Runnable() {			
