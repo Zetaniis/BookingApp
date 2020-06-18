@@ -83,24 +83,27 @@ public class base extends JFrame {
 	private String sqlFlights = "";
 	private String sqlDates = "";
 	
-	//log4j
-	private static Logger log = Logger.getLogger(base.class.getName());				
 	private JButton btnNewButton;
 	private JTextField destinationField;
-
+	
+	//log4j
+	private static Logger log = Logger.getLogger(base.class.getName());				
+	
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		BasicConfigurator.configure();		
-		EventQueue.invokeLater(new Runnable() {
+		BasicConfigurator.configure();
+		
+		log.debug("Create new Frame");
+		
+		EventQueue.invokeLater(new Runnable() {			
 			public void run() {
-				try {					
+				try {						
 					base frame = new base();									
 					frame.setVisible(true);
 				} catch (Exception e) {
-					log.error(e);
-					e.printStackTrace();
+					log.error(e.getMessage(),e);
 				}
 			}
 		});
