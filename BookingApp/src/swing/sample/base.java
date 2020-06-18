@@ -83,7 +83,8 @@ public class base extends JFrame {
 	private String sqlFlights = "";
 	private String sqlDates = "";
 	
-	private static Logger log = Logger.getLogger(base.class.getName());				//log4j
+	//log4j
+	private static Logger log = Logger.getLogger(base.class.getName());				
 	private JButton btnNewButton;
 	private JTextField destinationField;
 
