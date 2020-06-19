@@ -58,6 +58,7 @@ public class base extends JFrame {
 	private JButton btnChangeDate;
 	private JButton btnDeleteDate;
 	private JButton btnDeleteFlight;
+	private JButton btnAdmin;
 	private JTextField dateField;
 	private JTextField sourceField;
 	private JCheckBox chckbxNewsletter;
@@ -95,12 +96,6 @@ public class base extends JFrame {
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
 		
-		// create a new databases obj
-		sqliteDB db = new sqliteDB();
-		// testing
-		db.showFlightList();
-		
-		
 		log.debug("Create new Frame");
 		
 		EventQueue.invokeLater(new Runnable() {			
@@ -121,7 +116,8 @@ public class base extends JFrame {
 	 */
 	public base() {
 		
-		
+		// create a new databases obj	
+		sqliteDB db = new sqliteDB();
 		log.debug("testing");
 		 
 		ActionListener myActionListener = new ActionListener() {
@@ -148,13 +144,19 @@ public class base extends JFrame {
            			case "Add Flight":
            			System.out.println("[ActionListener] Button = "+e.getActionCommand());
            			break;
+           			case "Admin access":
+               		System.out.println("[ActionListener] Button = "+e.getActionCommand());
+               		adminLogin admin = new adminLogin();
+               		admin.setVisible(true);
+               		
+               		break;
            			
     			}
     		}    		
     	};
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 662, 539);
+		setBounds(100, 100, 1050, 539);
 		
 		menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -336,6 +338,7 @@ public class base extends JFrame {
 		listModelFlights.add(0, "test space3");
 		listModelFlights.add(0, "test space4");
 		
+		
 		flightsList = new JList(listModelFlights);
 		GridBagConstraints gbc_flightsList = new GridBagConstraints();
 		gbc_flightsList.insets = new Insets(0, 0, 0, 5);
@@ -474,5 +477,13 @@ public class base extends JFrame {
 		gbc_btnDeleteDate.gridy = 5;
 		right.add(btnDeleteDate, gbc_btnDeleteDate);
 		btnDeleteDate.addActionListener(myActionListener);
+		
+		btnAdmin = new JButton("Admin access");
+		GridBagConstraints gbc_btnAdmin = new GridBagConstraints();
+		gbc_btnAdmin.insets = new Insets(0, 0, 5, 5);
+		gbc_btnAdmin.gridx = 1;
+		gbc_btnAdmin.gridy = 6;
+		right.add(btnAdmin, gbc_btnAdmin);
+		btnAdmin.addActionListener(myActionListener);
 	}
 }
