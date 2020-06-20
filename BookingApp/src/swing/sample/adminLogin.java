@@ -126,6 +126,17 @@ public class adminLogin extends JFrame {
 				
 				if (admin.equals("admin") && pass.equals("password")) {
 					// open admin window
+					try{
+						dispose();
+						log.debug("Login to admin window success");
+						adminControl adminWindow = new adminControl();
+						adminWindow.setLocationRelativeTo(null);
+						adminWindow.setVisible(true);
+					}
+					catch(Exception er) {
+						log.error(er.getMessage(), er);
+					}
+					
 				}
 				else {
 					JOptionPane.showMessageDialog(null, "Invalid username or password");
