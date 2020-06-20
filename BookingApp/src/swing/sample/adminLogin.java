@@ -1,6 +1,7 @@
 package swing.sample;
 
 import javax.swing.JButton;
+import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -13,6 +14,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -40,6 +42,7 @@ public class adminLogin extends JFrame {
 			public void run() {
 				try {						
 					adminLogin frame = new adminLogin();									
+					frame.setLocationRelativeTo(null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -53,7 +56,7 @@ public class adminLogin extends JFrame {
 	public adminLogin() {
 		
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 400, 250);
 				
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -70,6 +73,7 @@ public class adminLogin extends JFrame {
 		left.setLayout(gbl_left);
 		
 		JLabel lblName1 = new JLabel("Username");
+		lblName1.setFont(new Font("Serif", Font.BOLD, 18));
 		GridBagConstraints gbc_lblName1 = new GridBagConstraints();
 		gbc_lblName1.anchor = GridBagConstraints.EAST;
 		gbc_lblName1.insets = new Insets(0, 0, 5, 5);
@@ -78,6 +82,8 @@ public class adminLogin extends JFrame {
 		left.add(lblName1, gbc_lblName1);
 		
 		nameField1 = new JTextField();
+		nameField1.setPreferredSize(new Dimension(20, 30));
+		nameField1.setFont(new Font("Verdana", Font.PLAIN, 15));
 		GridBagConstraints gbc_nameField1 = new GridBagConstraints();
 		gbc_nameField1.anchor = GridBagConstraints.WEST;
 		gbc_nameField1.insets = new Insets(0, 0, 5, 0);
@@ -87,6 +93,7 @@ public class adminLogin extends JFrame {
 		nameField1.setColumns(15);
 		
 		JLabel lblName2 = new JLabel("Password");
+		lblName2.setFont(new Font("Serif", Font.BOLD, 18));
 		GridBagConstraints gbc_lblName2 = new GridBagConstraints();
 		gbc_lblName2.anchor = GridBagConstraints.EAST;
 		gbc_lblName2.insets = new Insets(0, 0, 5, 5);
@@ -95,6 +102,8 @@ public class adminLogin extends JFrame {
 		left.add(lblName2, gbc_lblName2);
 		
 		nameField2 = new JPasswordField();
+		nameField2.setPreferredSize(new Dimension(20, 30));
+		nameField2.setFont(new Font("Verdana", Font.PLAIN, 15));
 		GridBagConstraints gbc_nameField2 = new GridBagConstraints();
 		gbc_nameField2.anchor = GridBagConstraints.WEST;
 		gbc_nameField2.insets = new Insets(0, 0, 5, 0);
@@ -104,8 +113,9 @@ public class adminLogin extends JFrame {
 		nameField2.setColumns(15);
 		
 		btnLogin = new JButton("Login");
+		btnLogin.setPreferredSize(new Dimension(75, 40));
 		GridBagConstraints gbc_btnLogin = new GridBagConstraints();
-		gbc_btnLogin.insets = new Insets(20, 0, 5, -300);
+		gbc_btnLogin.insets = new Insets(20, 0, 5, -250);
 		gbc_btnLogin.gridx = 0;
 		gbc_btnLogin.gridy = 8;
 		left.add(btnLogin, gbc_btnLogin);
