@@ -197,7 +197,7 @@ public class base extends JFrame {
            				index = flightsList.getSelectedIndex();
            				int indexDate = datesList.getSelectedIndex();
            				String date = sqlDates.get(indexDate);
-           				date.trim();
+           				//date.trim();
            				date = date.substring(0, Math.min(date.length(), 10));
            				System.out.println(date); System.out.println(sqlFlight_id.get(index));
            				db.deleteDate(sqlFlight_id.get(index), date);
