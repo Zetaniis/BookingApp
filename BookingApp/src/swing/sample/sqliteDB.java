@@ -8,14 +8,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.swing.*;
+import java.awt.*;
 import javax.swing.DefaultListModel;
 
 public class sqliteDB {
 	Connection conn = null;
 	Statement stat = null;
+	base ref;
 	private static Logger log = Logger.getLogger(base.class.getName());	
 	
-	sqliteDB(){
+	sqliteDB(base _ref){
+		ref = _ref;
 		try {
 			Class.forName("org.sqlite.JDBC");
 			conn = DriverManager.getConnection("jdbc:sqlite:./Properties/FlightDB.sqlite");	
@@ -40,14 +44,14 @@ public class sqliteDB {
 		}
 	}
 	
-	// tobe changed
-	public void showFlightList() {
+	public void showDatesList(int flightId) {
+		ref.sqlDates.clear();
 		try {			
-			ResultSet rs = stat.executeQuery("select * from FlightSource");
+			ResultSet rsDates = stat.executeQuery("select * from Dates WHERE flight_id = " + flightId + ";");
 			// add query to show list of flights
-			while(rs.next()) {
-				String name = rs.getString("IATA");
-				System.out.println(name);
+			while(rsDates.next()) {
+				ref.sqlDates.add("" + rsDates.getString("date") + "  " + rsDates.getString("departure_time") + " - " + rsDates.getString("arrival_time"));
+				log.debug("Updating dates table");
 			}
 			stat.close();
 		}
@@ -56,17 +60,19 @@ public class sqliteDB {
 		}
 	}
 	
-	// show data from BookingList table:
-	public void showBookingList() {
-		try {
-			ResultSet rs = stat.executeQuery("select * from BookingList");
-			while(rs.next()) {
-				int id = rs.getInt("userID");
-				String date = rs.getString("date");
-				String source = rs.getString("source");
-				String destination = rs.getString("destination");
-				System.out.println(id + " " + date + " " + source + " " + destination);
-			}						
+	public void showFlightsList() {
+		ref.sqlFlights.clear();
+		ref.sqlFlight_id.clear();
+		try {			
+			ResultSet rsFlights = stat.executeQuery("select * from Flights");
+			// add query to show list of flights
+			while(rsFlights.next()) {
+				ref.sqlFlight_id.add(rsFlights.getInt("flight_id"));
+				ref.sqlFlights.add(rsFlights.getString("source"));
+				ref.sqlFlights.add(rsFlights.getString("destination"));
+				log.debug("Updating flights table");
+				log.debug("Updating flight_id table");
+			}
 			stat.close();
 		}
 		catch(SQLException e) {
@@ -75,7 +81,7 @@ public class sqliteDB {
 	}
 	
 	// Booking ticket:
-	public void bookingTicket(String name, String secondName, String lastName, String email, int ticketAmount, int newsLetter, String from, String to, String date, String time) {
+	public void bookingTicket(String name, String secondName, String lastName, String email, int ticketAmount, boolean newsLetter, int flightId, String date) {
 		try{
 			// add data to Clients table
 			String dbquery1 = "INSERT INTO Clients (name, secondName, lastName, email, ticketAmount, newsletter)" + "VALUES (?, ?, ?, ?, ?, ?)";
@@ -85,21 +91,20 @@ public class sqliteDB {
 			pstat.setString(3, lastName);
 			pstat.setString(4, email);
 			pstat.setInt(5, ticketAmount);
-			pstat.setInt(6, newsLetter);
+			pstat.setBoolean(6, newsLetter);
 			pstat.executeUpdate();
 			
 			// add data to BookingList table
 			ResultSet rs = stat.executeQuery("select max(userID) from Clients");
-			int id = rs.getInt("userID");
+			int id = rs.getInt("max(userID)");
 			stat.close();
-			String dbquery2 = "INSERT INTO BookingList (userID, date, time, source, destination" + "VALUES (?, ?, ?, ?, ?)";
+			String dbquery2 = "INSERT INTO ClientsFlights (user_id, flight_id, date)" + "VALUES (?, ?, ?)";
 			pstat = conn.prepareStatement(dbquery2);
 			pstat.setInt(1, id);
-			pstat.setString(2, date);
-			pstat.setString(3, time);
-			pstat.setString(4, from);
-			pstat.setString(5, to);
+			pstat.setInt(2, flightId);
+			pstat.setString(3, date);
 			pstat.executeUpdate();
+			pstat.close();
 		}
 		catch(SQLException e){
 			log.error(e.getMessage(), e);
@@ -121,47 +126,69 @@ public class sqliteDB {
 	}
 	
 	// add flights (admin only) add data to FlightSource, FlightDestination, Aircraft tables
-	public void addFlight(String regNur, String date, String time, String from, String to, String airline, String model) {
+	public void addFlight(String source, String destination, String date, String departure, String arrival) {
 		try {
 			// add to FlightSource table:
-			String query1 = "INSERT INTO FlightSource (aircraftRegNr, date, time, IATA)" + "VALUES (?, ?, ?, ?)";
+			
+			String query1 = "INSERT INTO Flights (source, destination)" + "VALUES ( ?, ?)";
 			PreparedStatement pstat = conn.prepareStatement(query1);
-			pstat.setString(1, regNur);
-			pstat.setString(2, date);
-			pstat.setString(3, time);
-			pstat.setString(4, from);
+			pstat.setString(1, source);
+			pstat.setString(2, destination);
 			pstat.executeUpdate();		
 			
+			ResultSet rs = stat.executeQuery("select max(flight_id) from Flights");
+			int id = rs.getInt("max(flight_id)");
+			stat.close();
 			// add to FlightDestination table:
-			String query2 = "INSERT INTO FlightDestination (aircraftRegNr, date, time, IATA)" + "VALUES (?, ?, ?, ?)";
+			String query2 = "INSERT INTO Dates (flight_id, date, departure_time, arrival_time)" + "VALUES (?, ?, ?, ?)";
 			pstat = conn.prepareStatement(query2);
-			pstat.setString(1, regNur);
+			pstat.setInt(1, id);
 			pstat.setString(2, date);
-			pstat.setString(3, time);
-			pstat.setString(4, to);
+			pstat.setString(3, departure);
+			pstat.setString(4, arrival);
 			pstat.executeUpdate();
-			
-			// add to Aircraft table:
-			String query3 = "INSERT INTO Aircraft (aircraftRegNr, airlines, modelName)" + "VALUES (?, ?, ?)";
-			pstat = conn.prepareStatement(query3);
-			pstat.setString(1, regNur);
-			pstat.setString(2, airline);
-			pstat.setString(2, model);
-			pstat.executeUpdate();
-			
+			pstat.close();
 		}
 		catch(SQLException e) {
 			log.error(e.getMessage(), e);
 		}	
 	}
 	
-	// remove flights: delete data from FlightSource, FlightDestination
-	public void removeFlight(String regNum) {
+	public void addDate(int flight_id, String date, String departure, String arrival) {
 		try {
-			String query1 = "DELETE FROM FlightSource WHERE aircraftRegNr = " + regNum;
-			String query2 = "DELETE FROM FlightDestination WHERE aircraftRegNr = " + regNum;
+			// add to Dates table:
+			String query2 = "INSERT INTO Dates (flight_id, date, departure_time, arrival_time)" + "VALUES (?, ?, ?, ?)";
+			PreparedStatement pstat = conn.prepareStatement(query2);
+			pstat.setInt(1, flight_id);
+			pstat.setString(2, date);
+			pstat.setString(3, departure);
+			pstat.setString(4, arrival);
+			pstat.executeUpdate();
+			pstat.close();
+		}
+		catch(SQLException e) {
+			log.error(e.getMessage(), e);
+		}	
+	}
+	
+	public void deleteFlight(int flight_id) {
+		try {
+			String query2 = "DELETE FROM Dates WHERE flight_id = " + flight_id;
+			String query1 = "DELETE FROM Flights WHERE flight_id = " + flight_id;
 			stat.executeUpdate(query1);
 			stat.executeUpdate(query2);
+			stat.close();						
+		}
+		catch(SQLException e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+	
+	// remove flights: delete data from FlightSource, FlightDestination
+	public void deleteDate(int flight_id, String date) {
+		try {
+			String query1 = "DELETE FROM Dates WHERE flight_id = " + flight_id + " AND  date =" + date ;
+			stat.executeUpdate(query1);
 			stat.close();						
 		}
 		catch(SQLException e) {

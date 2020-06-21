@@ -34,6 +34,7 @@ public class adminLogin extends JFrame {
 	private JTextField nameField1;
 	private final JPasswordField nameField2;
 	private static Logger log = Logger.getLogger(base.class.getName());	
+	base ref;
 	
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
@@ -41,9 +42,9 @@ public class adminLogin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {			
 			public void run() {
 				try {						
-					adminLogin frame = new adminLogin();									
-					frame.setLocationRelativeTo(null);
-					frame.setVisible(true);
+					//adminLogin frame = new adminLogin();									
+					//frame.setLocationRelativeTo(null);
+					//frame.setVisible(true);
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
 				}
@@ -53,8 +54,8 @@ public class adminLogin extends JFrame {
 	} 
 	
 	
-	public adminLogin() {
-		
+	public adminLogin(base _ref) {
+		ref = _ref;
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 400, 250);
 				
@@ -73,7 +74,7 @@ public class adminLogin extends JFrame {
 		left.setLayout(gbl_left);
 		
 		JLabel lblName1 = new JLabel("Username");
-		lblName1.setFont(new Font("Serif", Font.BOLD, 18));
+		//lblName1.setFont(new Font("Serif", Font.BOLD, 18));
 		GridBagConstraints gbc_lblName1 = new GridBagConstraints();
 		gbc_lblName1.anchor = GridBagConstraints.EAST;
 		gbc_lblName1.insets = new Insets(0, 0, 5, 5);
@@ -93,7 +94,7 @@ public class adminLogin extends JFrame {
 		nameField1.setColumns(15);
 		
 		JLabel lblName2 = new JLabel("Password");
-		lblName2.setFont(new Font("Serif", Font.BOLD, 18));
+		//lblName2.setFont(new Font("Serif", Font.BOLD, 18));
 		GridBagConstraints gbc_lblName2 = new GridBagConstraints();
 		gbc_lblName2.anchor = GridBagConstraints.EAST;
 		gbc_lblName2.insets = new Insets(0, 0, 5, 5);
@@ -129,9 +130,10 @@ public class adminLogin extends JFrame {
 					try{
 						dispose();
 						log.debug("Login to admin window success");
-						adminControl adminWindow = new adminControl();
-						adminWindow.setLocationRelativeTo(null);
-						adminWindow.setVisible(true);
+						ref.adminAccess = true;
+						//adminControl adminWindow = new adminControl();
+						//adminWindow.setLocationRelativeTo(null);
+						//adminWindow.setVisible(true);
 					}
 					catch(Exception er) {
 						log.error(er.getMessage(), er);

@@ -5,7 +5,8 @@ import org.apache.log4j.Logger;  			//log4j
 import java.sql.*;							//sql
 
 import java.lang.String;
-
+import java.util.*;
+import java.util.List;
 import java.awt.*;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,9 @@ import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 //import com.sun.org.apache.xpath.internal.operations.Bool;
 import javax.swing.*;
@@ -53,7 +57,6 @@ public class base extends JFrame {
 	private JLabel lblFlights;
 	private JLabel lblDates;
 	private JPanel right;
-	private JButton btnAddFlight;
 	private JButton btnAddDate;
 	private JButton btnChangeDate;
 	private JButton btnDeleteDate;
@@ -63,12 +66,12 @@ public class base extends JFrame {
 	private JTextField sourceField;
 	private JCheckBox chckbxNewsletter;
 	private JLabel lblSubscribeToNewsletter;
-	private JSpinner spinner_3;
-	private JSpinner spinner_4;
+	private JSpinner arrHour;
+	private JSpinner arrMinutes;
 	private JPanel panel_4;
 	private JPanel panel_3;
-	private JSpinner spinner_1;
-	private JSpinner spinner_2;
+	private JSpinner depHour;
+	private JSpinner depMinutes;
 	private JLabel lblSecondName;
 	private JTextField secNameField;
 	
@@ -80,15 +83,27 @@ public class base extends JFrame {
 	private boolean subscribe = false;
 	private String newFlight = "";
 	private String newDate = ""; 			//to be changed
+	public boolean adminAccess = false;	//used to gain admin privileges 
 	
-	private String sqlFlights = "";
-	private String sqlDates = "";
+	public List<String> sqlDates = new ArrayList<String>();
+	public List<String> sqlFlights = new ArrayList<String>();
+	public List<Integer> sqlFlight_id = new ArrayList<Integer>();
 	
-	private JButton btnNewButton;
+	private JButton btnAddFlight;
 	private JTextField destinationField;
+	private JLabel lblSource;
+	private JLabel lblDestination;
+	
+	sqliteDB db;
 	
 	//log4j
-	private static Logger log = Logger.getLogger(base.class.getName());				
+	private static Logger log = Logger.getLogger(base.class.getName());		
+	
+	static base ref = null;
+	static JFrame jframe = null;
+	private JLabel lblNewLabel;
+	private JLabel lblDepartureTime;
+	private JLabel lblArrivalTime;
 	
 	/**
 	 * Launch the application.
@@ -101,7 +116,7 @@ public class base extends JFrame {
 		EventQueue.invokeLater(new Runnable() {			
 			public void run() {
 				try {						
-					base frame = new base();									
+					base frame = new base("Booking Application");									
 					frame.setVisible(true);
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -110,51 +125,198 @@ public class base extends JFrame {
 		});
 		
 	} 	
+	
+	public void checkBtn() {
+		if(nameField.getText().isBlank() || surnameField.getText().isBlank() || mailField.getText().isBlank() || ((Integer) numOfTicketsSpinner.getValue() == 0 ) || datesList.isSelectionEmpty() || flightsList.isSelectionEmpty()){
+			btnBookIt.setEnabled(false);
+			log.debug("Button BookIt disabled");
+		}
+		else {
+			log.debug("Button BookIt enabled");
+			btnBookIt.setEnabled(true);
+		}//*/
+		
+		if (!adminAccess) {
+			
+		}
+
+	}
+	
+	public void UpdateFlights() {
+		db.showFlightsList();				//takes selected id and uses it to show dates
+		DefaultListModel<String> listModelFlights = new DefaultListModel<String>();
+		for (int i = 0; i < sqlFlights.size(); i+=2) {
+			listModelFlights.add(i/2, "" + sqlFlights.get(i) + " - " + sqlFlights.get(i+1));
+		}	
+		flightsList.setModel(listModelFlights);
+	}
+	
+	public void UpdateDates() {		
+		int index = flightsList.getSelectedIndex();	
+		if (index == -1) index = 0;
+		db.showDatesList(sqlFlight_id.get(index));				//takes selected id and uses it to show dates
+		DefaultListModel<String> listModelFlights = new DefaultListModel<String>();
+		for (int i = 0; i < sqlDates.size(); i++) {
+			listModelFlights.add(i, sqlDates.get(i));
+		}	
+		datesList.setModel(listModelFlights);
+	}
 
 	/**
 	 * Create the frame.
 	 */
-	public base() {
+	public base(String frameName){	
+		super(frameName);
 		
+		jframe = this;
+		ref = this;
 		// create a new databases obj	
-		sqliteDB db = new sqliteDB();
+		db = new sqliteDB(this);
 		log.debug("testing");
 		 
 		ActionListener myActionListener = new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			System.out.println("[ActionListener] Button = "+e.getActionCommand());
-    			
+    			int index;
     			switch(e.getActionCommand())
     			{
        				case "Book it":
-           			System.out.println("[ActionListener] Button = "+e.getActionCommand());
+       					db.bookingTicket(nameField.getText(), secNameField.getText(), surnameField.getText(), mailField.getText(), (Integer) numOfTicketsSpinner.getValue(), chckbxNewsletter.isSelected(), flightsList.getSelectedIndex(), datesList.getSelectedValue().toString() );
+       					log.info("Booked ticket on " + nameField.getText() + " " + secNameField.getText() + " " + surnameField.getText() + " for " + flightsList.getSelectedValue().toString() + " flight "  + " at " + datesList.getSelectedValue().toString() + " date ");
            			break;
-           			case "Delete flight":
-           			System.out.println("[ActionListener] Button = "+e.getActionCommand());
-           			break;
-           			case "Add delay":
-           			System.out.println("[ActionListener] Button = "+e.getActionCommand());
-           			break;
-           			case "Delete date":
-           			System.out.println("[ActionListener] Button = "+e.getActionCommand());
-           			break;
-           			case "Add Date":
-           			System.out.println("[ActionListener] Button = "+e.getActionCommand());
-           			break;
-           			case "Add Flight":
-           			System.out.println("[ActionListener] Button = "+e.getActionCommand());
-           			break;
-           			case "Admin access":
-               		System.out.println("[ActionListener] Button = "+e.getActionCommand());
-               		adminLogin admin = new adminLogin();
-               		admin.setVisible(true);
-               		
-               		break;
            			
+       				case "Add Date":
+       					log.info("Adding new date of flight");
+       					index = flightsList.getSelectedIndex();
+           				db.addDate(sqlFlight_id.get(index), dateField.getText(), "" + depHour.getValue() + ":" + depMinutes.getValue(), "" + arrHour.getValue() + ":" + arrMinutes.getValue());
+           				UpdateFlights();
+           				UpdateDates();
+           			break;
+           			
+           			case "Delete date":
+           				index = flightsList.getSelectedIndex();
+           				int indexDate = datesList.getSelectedIndex();
+           				String date = sqlDates.get(indexDate);
+           				date.trim();
+           				date = date.substring(0, Math.min(date.length(), 10));
+           				System.out.println(date); System.out.println(sqlFlight_id.get(index));
+           				db.deleteDate(sqlFlight_id.get(index), date);
+           				UpdateFlights();
+           				UpdateDates();
+           			break;
+           			
+           			case "Change Date":
+           				UpdateFlights();
+           				UpdateDates();
+           			break;
+           			
+           			case "Add Flight":
+           				log.info("Adding new flight connection");
+           				db.addFlight(sourceField.getText(), destinationField.getText(), dateField.getText(), "" + depHour.getValue() + ":" + depMinutes.getValue(), "" + arrHour.getValue() + ":" + arrMinutes.getValue());
+           				UpdateFlights();
+           				UpdateDates();
+           			break;
+           			
+           			case "Delete flight":
+           				index = flightsList.getSelectedIndex();
+           				db.deleteFlight(sqlFlight_id.get(index));
+           				log.info("Deleting flight connection at index " + flightsList.getSelectedIndex());
+           				UpdateFlights();
+           				UpdateDates();
+               		break;
+               		
+           			case "Admin access":
+           				adminLogin admin = new adminLogin(ref);
+           				admin.setVisible(true);
+               		break;
     			}
     		}    		
     	};
 		
+    	WindowListener myWindowListener = new WindowListener() {
+			public void windowActivated(WindowEvent e) {
+    			System.out.println("[WindowListener] Activated!"+" visible="+jframe.isVisible()+", active="+jframe.isActive());
+			}
+
+			public void windowClosed(WindowEvent e) {
+    			System.out.println("[WindowListener] Closed!");
+			}
+
+			public void windowClosing(WindowEvent e) {
+				db.closeConnection();
+    			System.out.println("[WindowListener] Closing!");
+			}
+
+			public void windowDeactivated(WindowEvent e) {
+    			System.out.println("[WindowListener] Deactivated!");
+    		}
+
+			public void windowDeiconified(WindowEvent e) {
+    			System.out.println("[WindowListener] Deiconified!");
+			}
+
+			public void windowIconified(WindowEvent e) {
+    			System.out.println("[WindowListener] Iconified!");
+    			//jframe.setTitle("kuku");
+    			jframe.setVisible(true);
+    		}
+
+			public void windowOpened(WindowEvent e) {
+    			System.out.println("[WindowListener] Opened!"+" visible="+jframe.isVisible()+", active="+jframe.isActive());
+			}    		
+    	};
+    	
+    	MouseListener myMouseListener = new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+    			//System.out.println("[MouseListener] Clicked! Button = "+((JButton) e.getSource()).getText());
+			}
+
+			public void mouseEntered(MouseEvent e) {
+    			//System.out.println("[MouseListener] Entered! Button = "+((JButton) e.getSource()).getText());
+			}
+
+			public void mouseExited(MouseEvent e) {
+    			//System.out.println("[MouseListener] Exited! Button = "+((JButton) e.getSource()).getText());
+			}
+
+			public void mousePressed(MouseEvent e) {
+    			//System.out.println("[MouseListener] Pressed! Button = "+((JButton) e.getSource()).getText());
+			}
+
+			public void mouseReleased(MouseEvent e) {
+				if (e.getSource().equals(datesList));
+				else UpdateDates();
+				checkBtn();
+			}
+    		
+    	};
+    	
+    	DocumentListener myDocumentListener = new DocumentListener() {
+			
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				checkBtn();
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				checkBtn();
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				checkBtn();
+				// TODO Auto-generated method stub
+				
+			}
+		};
+    	
+    	this.addWindowListener(myWindowListener);
+    	
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1050, 539);
 		
@@ -206,7 +368,7 @@ public class base extends JFrame {
 		left.add(lblName, gbc_lblName);
 		
 		nameField = new JTextField();
-		//nameField.getText();
+		nameField.getDocument().addDocumentListener(myDocumentListener);
 		GridBagConstraints gbc_nameField = new GridBagConstraints();
 		gbc_nameField.anchor = GridBagConstraints.WEST;
 		gbc_nameField.insets = new Insets(0, 0, 5, 0);
@@ -224,6 +386,7 @@ public class base extends JFrame {
 		left.add(lblSecondName, gbc_lblSecondName);
 		
 		secNameField = new JTextField();
+		secNameField.getDocument().addDocumentListener(myDocumentListener);
 		secNameField.setColumns(10);
 		GridBagConstraints gbc_secNameField = new GridBagConstraints();
 		gbc_secNameField.insets = new Insets(0, 0, 5, 0);
@@ -241,6 +404,7 @@ public class base extends JFrame {
 		left.add(lblSurname, gbc_lblSurname);
 		
 		surnameField = new JTextField();
+		surnameField.getDocument().addDocumentListener(myDocumentListener);
 		GridBagConstraints gbc_surnameField = new GridBagConstraints();
 		gbc_surnameField.anchor = GridBagConstraints.WEST;
 		gbc_surnameField.insets = new Insets(0, 0, 5, 0);
@@ -276,6 +440,7 @@ public class base extends JFrame {
 		left.add(lblMail, gbc_lblMail);
 		
 		mailField = new JTextField();
+		mailField.getDocument().addDocumentListener(myDocumentListener);
 		mailField.setColumns(10);
 		GridBagConstraints gbc_mailField = new GridBagConstraints();
 		gbc_mailField.insets = new Insets(0, 0, 5, 0);
@@ -301,6 +466,8 @@ public class base extends JFrame {
 		left.add(chckbxNewsletter, gbc_chckbxNewsletter);
 		
 		btnBookIt = new JButton("Book it");
+		
+		
 		GridBagConstraints gbc_btnBookIt = new GridBagConstraints();
 		gbc_btnBookIt.insets = new Insets(0, 0, 5, 5);
 		gbc_btnBookIt.gridx = 0;
@@ -334,12 +501,11 @@ public class base extends JFrame {
 		
 		DefaultListModel listModelFlights = new DefaultListModel();
 		listModelFlights.add(0, "test space");
-		listModelFlights.add(0, "test space2");
-		listModelFlights.add(0, "test space3");
-		listModelFlights.add(0, "test space4");
 		
 		
 		flightsList = new JList(listModelFlights);
+		flightsList.addMouseListener(myMouseListener);
+		
 		GridBagConstraints gbc_flightsList = new GridBagConstraints();
 		gbc_flightsList.insets = new Insets(0, 0, 0, 5);
 		gbc_flightsList.fill = GridBagConstraints.BOTH;
@@ -349,12 +515,10 @@ public class base extends JFrame {
 		
 		
 		DefaultListModel listModelDates = new DefaultListModel();
-		listModelDates.add(0, "test space");
-		listModelDates.add(0, "test space2");
-		listModelDates.add(0, "test space3");
-		listModelDates.add(0, "test space4");
 		
 		datesList = new JList(listModelDates);
+		datesList.addMouseListener(myMouseListener);
+		
 		GridBagConstraints gbc_datesList = new GridBagConstraints();
 		gbc_datesList.fill = GridBagConstraints.BOTH;
 		gbc_datesList.gridx = 1;
@@ -365,125 +529,171 @@ public class base extends JFrame {
 		contentPane.add(right, BorderLayout.EAST);
 		GridBagLayout gbl_right = new GridBagLayout();
 		gbl_right.columnWidths = new int[]{0, 0, 0};
-		gbl_right.rowHeights = new int[]{0, 0, 26, 35, 0, 0, 0, 0, 0};
+		gbl_right.rowHeights = new int[]{0, 0, 0, 26, 26, 0, 0, 0, 0, 0, 0};
 		gbl_right.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gbl_right.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_right.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		right.setLayout(gbl_right);
+		
+		btnAdmin = new JButton("Admin access");
+		GridBagConstraints gbc_btnAdmin = new GridBagConstraints();
+		gbc_btnAdmin.insets = new Insets(0, 0, 5, 0);
+		gbc_btnAdmin.gridx = 1;
+		gbc_btnAdmin.gridy = 0;
+		right.add(btnAdmin, gbc_btnAdmin);
+		btnAdmin.addActionListener(myActionListener);
+		
+		lblSource = new JLabel("Source");
+		GridBagConstraints gbc_lblSource = new GridBagConstraints();
+		gbc_lblSource.insets = new Insets(0, 0, 5, 5);
+		gbc_lblSource.anchor = GridBagConstraints.EAST;
+		gbc_lblSource.gridx = 0;
+		gbc_lblSource.gridy = 1;
+		right.add(lblSource, gbc_lblSource);
 		
 		sourceField = new JTextField();
 		GridBagConstraints gbc_sourceField = new GridBagConstraints();
-		gbc_sourceField.insets = new Insets(0, 0, 5, 5);
+		gbc_sourceField.insets = new Insets(0, 0, 5, 0);
 		gbc_sourceField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_sourceField.gridx = 0;
-		gbc_sourceField.gridy = 0;
+		gbc_sourceField.gridx = 1;
+		gbc_sourceField.gridy = 1;
 		right.add(sourceField, gbc_sourceField);
 		sourceField.setColumns(10);
 		
-		btnAddFlight = new JButton("Add Source");
-		GridBagConstraints gbc_btnAddFlight = new GridBagConstraints();
-		gbc_btnAddFlight.insets = new Insets(0, 0, 5, 0);
-		gbc_btnAddFlight.gridx = 1;
-		gbc_btnAddFlight.gridy = 0;
-		right.add(btnAddFlight, gbc_btnAddFlight);
-		btnAddFlight.addActionListener(myActionListener);
+		lblDestination = new JLabel("Destination");
+		GridBagConstraints gbc_lblDestination = new GridBagConstraints();
+		gbc_lblDestination.insets = new Insets(0, 0, 5, 5);
+		gbc_lblDestination.anchor = GridBagConstraints.EAST;
+		gbc_lblDestination.gridx = 0;
+		gbc_lblDestination.gridy = 2;
+		right.add(lblDestination, gbc_lblDestination);
 		
 		destinationField = new JTextField();
 		destinationField.setColumns(10);
 		GridBagConstraints gbc_destinationField = new GridBagConstraints();
-		gbc_destinationField.insets = new Insets(0, 0, 5, 5);
+		gbc_destinationField.insets = new Insets(0, 0, 5, 0);
 		gbc_destinationField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_destinationField.gridx = 0;
-		gbc_destinationField.gridy = 1;
+		gbc_destinationField.gridx = 1;
+		gbc_destinationField.gridy = 2;
 		right.add(destinationField, gbc_destinationField);
 		
-		btnNewButton = new JButton("Add Destination");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
-		gbc_btnNewButton.gridx = 1;
-		gbc_btnNewButton.gridy = 1;
-		right.add(btnNewButton, gbc_btnNewButton);
+		lblNewLabel = new JLabel("Departure date");
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.anchor = GridBagConstraints.EAST;
+		gbc_lblNewLabel.gridx = 0;
+		gbc_lblNewLabel.gridy = 3;
+		right.add(lblNewLabel, gbc_lblNewLabel);
 		
 		dateField = new JTextField();
 		GridBagConstraints gbc_dateField = new GridBagConstraints();
-		gbc_dateField.insets = new Insets(0, 0, 5, 5);
+		gbc_dateField.insets = new Insets(0, 0, 5, 0);
 		gbc_dateField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_dateField.gridx = 0;
-		gbc_dateField.gridy = 2;
+		gbc_dateField.gridx = 1;
+		gbc_dateField.gridy = 3;
 		right.add(dateField, gbc_dateField);
 		dateField.setColumns(10);
 		
-		btnAddDate = new JButton("Add Date");
-		GridBagConstraints gbc_btnAddDate = new GridBagConstraints();
-		gbc_btnAddDate.insets = new Insets(0, 0, 5, 0);
-		gbc_btnAddDate.gridx = 1;
-		gbc_btnAddDate.gridy = 2;
-		right.add(btnAddDate, gbc_btnAddDate);
-		btnAddDate.addActionListener(myActionListener);
+		lblDepartureTime = new JLabel("Departure time");
+		GridBagConstraints gbc_lblDepartureTime = new GridBagConstraints();
+		gbc_lblDepartureTime.anchor = GridBagConstraints.EAST;
+		gbc_lblDepartureTime.insets = new Insets(0, 0, 5, 5);
+		gbc_lblDepartureTime.gridx = 0;
+		gbc_lblDepartureTime.gridy = 4;
+		right.add(lblDepartureTime, gbc_lblDepartureTime);
 		
 		panel_3 = new JPanel();	
 		GridBagConstraints gbc_panel_3 = new GridBagConstraints();
-		gbc_panel_3.insets = new Insets(0, 0, 5, 5);
+		gbc_panel_3.insets = new Insets(0, 0, 5, 0);
 		gbc_panel_3.fill = GridBagConstraints.BOTH;
-		gbc_panel_3.gridx = 0;
-		gbc_panel_3.gridy = 3;
+		gbc_panel_3.gridx = 1;
+		gbc_panel_3.gridy = 4;
 		right.add(panel_3, gbc_panel_3);
 		panel_3.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		spinner_1 = new JSpinner();
-		panel_3.add(spinner_1);
+		depHour = new JSpinner();
+		modeltau = new SpinnerNumberModel(0, 0, 23, 1);
+		depHour.setModel(modeltau);
+		panel_3.add(depHour);
 		
-		spinner_2 = new JSpinner();
-		panel_3.add(spinner_2);
+		depMinutes = new JSpinner();
+		modeltau = new SpinnerNumberModel(0, 0, 59, 1);
+		depMinutes.setModel(modeltau);
+		panel_3.add(depMinutes);
+		
+		lblArrivalTime = new JLabel("Arrival time");
+		GridBagConstraints gbc_lblArrivalTime = new GridBagConstraints();
+		gbc_lblArrivalTime.anchor = GridBagConstraints.EAST;
+		gbc_lblArrivalTime.insets = new Insets(0, 0, 5, 5);
+		gbc_lblArrivalTime.gridx = 0;
+		gbc_lblArrivalTime.gridy = 5;
+		right.add(lblArrivalTime, gbc_lblArrivalTime);
 		
 		panel_4 = new JPanel();
 		GridBagConstraints gbc_panel_4 = new GridBagConstraints();
 		gbc_panel_4.insets = new Insets(0, 0, 5, 0);
 		gbc_panel_4.fill = GridBagConstraints.BOTH;
 		gbc_panel_4.gridx = 1;
-		gbc_panel_4.gridy = 3;
+		gbc_panel_4.gridy = 5;
 		right.add(panel_4, gbc_panel_4);
 		panel_4.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		spinner_3 = new JSpinner();
-		panel_4.add(spinner_3);
+		arrHour = new JSpinner();
+		modeltau = new SpinnerNumberModel(0, 0, 23, 1);
+		arrHour.setModel(modeltau);
+		panel_4.add(arrHour);
 		
-		spinner_4 = new JSpinner();
-		panel_4.add(spinner_4);
-		
-		btnChangeDate = new JButton("Change date");
-		GridBagConstraints gbc_btnChangeDate = new GridBagConstraints();
-		gbc_btnChangeDate.insets = new Insets(0, 0, 5, 5);
-		gbc_btnChangeDate.gridx = 0;
-		gbc_btnChangeDate.gridy = 4;
-		right.add(btnChangeDate, gbc_btnChangeDate);
-		btnChangeDate.addActionListener(myActionListener);
+		arrMinutes = new JSpinner();
+		modeltau = new SpinnerNumberModel(0, 0, 59, 1);
+		arrMinutes.setModel(modeltau);
+		panel_4.add(arrMinutes);
 		
 		btnDeleteFlight = new JButton("Delete flight");
 		GridBagConstraints gbc_btnDeleteFlight = new GridBagConstraints();
+		gbc_btnDeleteFlight.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnDeleteFlight.insets = new Insets(0, 0, 5, 5);
 		gbc_btnDeleteFlight.gridx = 0;
-		gbc_btnDeleteFlight.gridy = 5;
+		gbc_btnDeleteFlight.gridy = 6;
 		right.add(btnDeleteFlight, gbc_btnDeleteFlight);
 		btnDeleteFlight.addActionListener(myActionListener);
 		
+		btnAddFlight = new JButton("Add Flight");
+		GridBagConstraints gbc_btnAddFlight = new GridBagConstraints();
+		gbc_btnAddFlight.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnAddFlight.insets = new Insets(0, 0, 5, 0);
+		gbc_btnAddFlight.gridx = 1;
+		gbc_btnAddFlight.gridy = 6;
+		right.add(btnAddFlight, gbc_btnAddFlight);
+		btnAddFlight.addActionListener(myActionListener);
+		
 		btnDeleteDate = new JButton("Delete date");
 		GridBagConstraints gbc_btnDeleteDate = new GridBagConstraints();
-		gbc_btnDeleteDate.insets = new Insets(0, 0, 5, 0);
-		gbc_btnDeleteDate.gridx = 1;
-		gbc_btnDeleteDate.gridy = 5;
+		gbc_btnDeleteDate.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnDeleteDate.insets = new Insets(0, 0, 5, 5);
+		gbc_btnDeleteDate.gridx = 0;
+		gbc_btnDeleteDate.gridy = 7;
 		right.add(btnDeleteDate, gbc_btnDeleteDate);
 		btnDeleteDate.addActionListener(myActionListener);
 		
-		btnAdmin = new JButton("Admin access");
-		GridBagConstraints gbc_btnAdmin = new GridBagConstraints();
-		gbc_btnAdmin.insets = new Insets(0, 0, 5, 5);
-		gbc_btnAdmin.gridx = 1;
-		gbc_btnAdmin.gridy = 6;
-		right.add(btnAdmin, gbc_btnAdmin);
-		btnAdmin.addActionListener(myActionListener);
+		btnAddDate = new JButton("Add Date");
+		GridBagConstraints gbc_btnAddDate = new GridBagConstraints();
+		gbc_btnAddDate.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnAddDate.insets = new Insets(0, 0, 5, 0);
+		gbc_btnAddDate.gridx = 1;
+		gbc_btnAddDate.gridy = 7;
+		right.add(btnAddDate, gbc_btnAddDate);
+		btnAddDate.addActionListener(myActionListener);
+		
+		btnChangeDate = new JButton("Change date");
+		GridBagConstraints gbc_btnChangeDate = new GridBagConstraints();
+		gbc_btnChangeDate.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnChangeDate.insets = new Insets(0, 0, 5, 5);
+		gbc_btnChangeDate.gridx = 0;
+		gbc_btnChangeDate.gridy = 8;
+		right.add(btnChangeDate, gbc_btnChangeDate);
+		btnChangeDate.addActionListener(myActionListener);
+		
+		UpdateFlights();
+		UpdateDates();
+		checkBtn();
 	}
 }
