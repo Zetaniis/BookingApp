@@ -52,8 +52,9 @@ public class base extends JFrame {
 	private JMenuItem mntmQuit;
 	private JSpinner numOfTicketsSpinner;
 	private JPanel middle;
-	private JList datesList;
-	private JList flightsList;
+	public JList<String> datesList;
+	public JList<String> flightsList;
+	public JList<String> bookingList;
 	private JLabel lblFlights;
 	private JLabel lblDates;
 	private JPanel right;
@@ -88,6 +89,9 @@ public class base extends JFrame {
 	public List<String> sqlDates = new ArrayList<String>();
 	public List<String> sqlFlights = new ArrayList<String>();
 	public List<Integer> sqlFlight_id = new ArrayList<Integer>();
+	public List<Integer> sqlBooking_id = new ArrayList<Integer>();
+	public List<String> sqlBooking = new ArrayList<String>();
+	public List<Integer> sqlSubscriber = new ArrayList<Integer>();
 	
 	private JButton btnAddFlight;
 	private JTextField destinationField;
@@ -116,7 +120,8 @@ public class base extends JFrame {
 		EventQueue.invokeLater(new Runnable() {			
 			public void run() {
 				try {						
-					base frame = new base("Booking Application");									
+					base frame = new base("Booking Application");	
+					frame.setLocationRelativeTo(null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -127,7 +132,7 @@ public class base extends JFrame {
 	} 	
 	
 	public void checkBtn() {
-		if(nameField.getText().isBlank() || surnameField.getText().isBlank() || mailField.getText().isBlank() || ((Integer) numOfTicketsSpinner.getValue() == 0 ) || datesList.isSelectionEmpty() || flightsList.isSelectionEmpty()){
+		if(nameField.getText().isEmpty() || surnameField.getText().isEmpty() || mailField.getText().isEmpty() || ((Integer) numOfTicketsSpinner.getValue() == 0 ) || datesList.isSelectionEmpty() || flightsList.isSelectionEmpty()){
 			btnBookIt.setEnabled(false);
 			log.debug("Button BookIt disabled");
 		}
@@ -162,6 +167,18 @@ public class base extends JFrame {
 		datesList.setModel(listModelFlights);
 	}
 
+	public void UpdateBookings() {
+		db.showBookingList();
+		DefaultListModel<String> listModelBookings = new DefaultListModel<String>();
+		for (int i = 0; i < sqlBooking_id.size(); i++) {			
+			if (sqlSubscriber.get(i) == 0) {
+				listModelBookings.add(i, "" + sqlBooking_id.get(i) + " - " + sqlBooking.get(i) + " " );
+			}else {
+				listModelBookings.add(i, "" + sqlBooking_id.get(i) + " - " + sqlBooking.get(i) + " 	---SUBSCRIBER---" );
+			}						
+		}	
+		bookingList.setModel(listModelBookings);
+	}
 	/**
 	 * Create the frame.
 	 */
@@ -171,8 +188,7 @@ public class base extends JFrame {
 		jframe = this;
 		ref = this;
 		// create a new databases obj	
-		db = new sqliteDB(this);
-		log.debug("testing");
+		db = new sqliteDB(ref);
 		 
 		ActionListener myActionListener = new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
@@ -205,7 +221,7 @@ public class base extends JFrame {
            				UpdateDates();
            			break;
            			
-           			case "Change Date":
+           			case "Refresh":
            				UpdateFlights();
            				UpdateDates();
            			break;
@@ -227,6 +243,7 @@ public class base extends JFrame {
                		
            			case "Admin access":
            				adminLogin admin = new adminLogin(ref);
+           				admin.setLocationRelativeTo(null);
            				admin.setVisible(true);
                		break;
     			}
@@ -377,7 +394,7 @@ public class base extends JFrame {
 		left.add(nameField, gbc_nameField);
 		nameField.setColumns(10);
 		
-		lblSecondName = new JLabel("Second name");
+		lblSecondName = new JLabel("Middle name");
 		GridBagConstraints gbc_lblSecondName = new GridBagConstraints();
 		gbc_lblSecondName.anchor = GridBagConstraints.EAST;
 		gbc_lblSecondName.insets = new Insets(0, 0, 5, 5);
@@ -500,7 +517,7 @@ public class base extends JFrame {
 		
 		
 		DefaultListModel listModelFlights = new DefaultListModel();
-		listModelFlights.add(0, "test space");
+		//listModelFlights.add(0, "test space");
 		
 		
 		flightsList = new JList(listModelFlights);
@@ -524,6 +541,11 @@ public class base extends JFrame {
 		gbc_datesList.gridx = 1;
 		gbc_datesList.gridy = 1;
 		middle.add(datesList, gbc_datesList);
+		
+		DefaultListModel listModelBookings = new DefaultListModel();
+		
+		bookingList = new JList(listModelBookings);
+		bookingList.addMouseListener(myMouseListener);
 		
 		right = new JPanel();
 		contentPane.add(right, BorderLayout.EAST);
@@ -683,7 +705,7 @@ public class base extends JFrame {
 		right.add(btnAddDate, gbc_btnAddDate);
 		btnAddDate.addActionListener(myActionListener);
 		
-		btnChangeDate = new JButton("Change date");
+		btnChangeDate = new JButton("Refresh");
 		GridBagConstraints gbc_btnChangeDate = new GridBagConstraints();
 		gbc_btnChangeDate.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnChangeDate.insets = new Insets(0, 0, 5, 5);
@@ -692,6 +714,7 @@ public class base extends JFrame {
 		right.add(btnChangeDate, gbc_btnChangeDate);
 		btnChangeDate.addActionListener(myActionListener);
 		
+		UpdateBookings();
 		UpdateFlights();
 		UpdateDates();
 		checkBtn();

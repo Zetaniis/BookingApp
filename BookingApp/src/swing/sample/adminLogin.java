@@ -33,8 +33,9 @@ public class adminLogin extends JFrame {
 	private JPanel contentPane;
 	private JTextField nameField1;
 	private final JPasswordField nameField2;
+	
 	private static Logger log = Logger.getLogger(base.class.getName());	
-	base ref;
+	//static base ref = null;
 	
 	public static void main(String[] args) {
 		BasicConfigurator.configure();
@@ -42,7 +43,7 @@ public class adminLogin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {			
 			public void run() {
 				try {						
-					//adminLogin frame = new adminLogin();									
+					//adminLogin frame = new adminLogin(ref);									
 					//frame.setLocationRelativeTo(null);
 					//frame.setVisible(true);
 				} catch (Exception e) {
@@ -55,7 +56,7 @@ public class adminLogin extends JFrame {
 	
 	
 	public adminLogin(base _ref) {
-		ref = _ref;
+		//ref = _ref;
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 400, 250);
 				
@@ -130,10 +131,10 @@ public class adminLogin extends JFrame {
 					try{
 						dispose();
 						log.debug("Login to admin window success");
-						ref.adminAccess = true;
-						//adminControl adminWindow = new adminControl();
-						//adminWindow.setLocationRelativeTo(null);
-						//adminWindow.setVisible(true);
+						//ref.adminAccess = true;
+						adminControl adminWindow = new adminControl(_ref);
+						adminWindow.setLocationRelativeTo(null);
+						adminWindow.setVisible(true);
 					}
 					catch(Exception er) {
 						log.error(er.getMessage(), er);

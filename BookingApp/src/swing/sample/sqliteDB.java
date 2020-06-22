@@ -80,6 +80,25 @@ public class sqliteDB {
 		}
 	}
 	
+	public void showBookingList() {
+		ref.sqlBooking_id.clear();
+		ref.sqlBooking.clear();
+		ref.sqlSubscriber.clear();
+		try {
+			ResultSet rsBooking = stat.executeQuery("select * from Clients");
+			while (rsBooking.next()) {
+				ref.sqlBooking_id.add(rsBooking.getInt("userID"));				
+				ref.sqlBooking.add(rsBooking.getString("email"));
+				ref.sqlSubscriber.add(rsBooking.getInt("newsletter"));
+				log.debug("Updating booking table");				
+			}
+			stat.close();
+		}
+		catch(SQLException e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+	
 	// Booking ticket:
 	public void bookingTicket(String name, String secondName, String lastName, String email, int ticketAmount, boolean newsLetter, int flightId, String date) {
 		try{
@@ -115,7 +134,7 @@ public class sqliteDB {
 	// Delete ticker order from BookingList table
 	public void cancelTicket(int num) {
 		try {
-			String query = "DELETE FROM BookingList WHERE userID = " + num;
+			String query = "DELETE FROM Clients WHERE userID = " + num;
 			
 			stat.executeUpdate(query);
 			stat.close();
