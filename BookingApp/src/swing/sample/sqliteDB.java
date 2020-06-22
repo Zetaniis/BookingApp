@@ -206,8 +206,10 @@ public class sqliteDB {
 	// remove flights: delete data from FlightSource, FlightDestination
 	public void deleteDate(int flight_id, String date) {
 		try {
-			String query1 = "DELETE FROM Dates WHERE flight_id = " + flight_id + " AND  date =" + date ;
+			String query1 = "DELETE FROM ClientsFlights WHERE flight_id = " + flight_id + " AND  date =" + date ;
+			String query2 = "DELETE FROM Dates WHERE flight_id = " + flight_id + " AND  date =" + date ;
 			stat.executeUpdate(query1);
+			stat.executeUpdate(query2);
 			stat.close();						
 		}
 		catch(SQLException e) {

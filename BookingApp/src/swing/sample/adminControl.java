@@ -184,14 +184,15 @@ public class adminControl extends JFrame{
 		middle = new JPanel();
 		contentPane.add(middle, BorderLayout.CENTER);
 		GridBagLayout gbl_middle = new GridBagLayout();
-		gbl_middle.columnWidths = new int[]{142, 122, 0};
-		gbl_middle.rowHeights = new int[]{0, 0, 0};
-		gbl_middle.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
+		gbl_middle.columnWidths = new int[]{337, 292, 0};
+		gbl_middle.rowHeights = new int[]{26, 0, 0};
+		gbl_middle.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		gbl_middle.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 		middle.setLayout(gbl_middle);
 		
 		lblBooking = new JLabel("Bookings");
 		GridBagConstraints gbc_lblBooking = new GridBagConstraints();
+		gbc_lblBooking.fill = GridBagConstraints.VERTICAL;
 		gbc_lblBooking.insets = new Insets(0, 0, 5, 5);
 		gbc_lblBooking.gridx = 0;
 		gbc_lblBooking.gridy = 0;

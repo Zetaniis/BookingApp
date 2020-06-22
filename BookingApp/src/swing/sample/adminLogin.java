@@ -139,7 +139,6 @@ public class adminLogin extends JFrame {
 					catch(Exception er) {
 						log.error(er.getMessage(), er);
 					}
-					
 				}
 				else {
 					JOptionPane.showMessageDialog(null, "Invalid username or password");
